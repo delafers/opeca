@@ -1,0 +1,60 @@
+version: '3.7'
+
+services:
+  proxy:
+    image: opeca_proxy:latest
+    build:
+      context: ./proxy
+    ports:
+      - 8664:8080
+    volumes:
+      - ./:/usr/src/project
+      - ./static_django/:/usr/src/project/static_django/
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - opeca_network
+  frontend:
+    image: opeca_frontend:latest
+    build:
+      context: ./frontend
+    networks:
+      - opeca_network
+  backend:
+    build:
+      context: ./backend/project
+    image: opeca_backend:latest
+    volumes:
+      - ./media/:/usr/src/project/media/
+      - ./static_django/:/usr/src/project/static_django/
+    environment:
+      # - Default user
+      DJANGO_SUPERUSER_USERNAME: "Delafer"
+      DJANGO_SUPERUSER_EMAIL: "vinodel2001@mail.ru"
+      DJANGO_SUPERUSER_PASSWORD: "Alpine12"
+    depends_on:
+      - db
+    networks:
+      - opeca_network
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=django_traefik
+      - POSTGRES_USER=django_traefik
+      - POSTGRES_PASSWORD=django_traefik
+    networks:
+      - opeca_network
+    # expose:
+    #   - 5432
+    # ports:
+    # - 5432:5432
+
+volumes:
+  postgres_data:
+
+networks:
+  opeca_network: 
+    driver: overlay

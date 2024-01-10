@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  proxy:
+    build:
+      context: ./proxy
+    ports:
+      - 8665:8080
+    volumes:
+      - ./:/usr/src/project
+      - ./static_django/:/usr/src/project/static_django/
+    depends_on:
+      - backend
+      - frontend
+  frontend:
+    build:
+      context: ./frontend
+  backend:
+    build:
+      context: ./back/project
+    volumes:
+      - ./media/:/usr/src/project/media/
+      - ./static_django/:/usr/src/project/static_django/
+    environment:
+      # - Default user
+      DJANGO_SUPERUSER_USERNAME: "Delafer"
+      DJANGO_SUPERUSER_EMAIL: "vinodel2001@mail.ru"
+      DJANGO_SUPERUSER_PASSWORD: "Alpine12"
+    depends_on:
+      - db
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=django_traefik
+      - POSTGRES_USER=django_traefik
+      - POSTGRES_PASSWORD=django_traefik
+    # expose:
+    #   - 5432
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:
